@@ -41,7 +41,7 @@ export async function listTasks(organizationId: string, filters?: {
   const supabase = await createClient();
   let query = supabase
     .from("tasks")
-    .select("*, business:businesses!tasks_business_id_organization_id_fkey(name), lead:leads!tasks_lead_id_organization_id_fkey(id,stage,business:businesses!leads_business_id_organization_id_fkey(name))")
+    .select("*, business:businesses!tasks_business_id_organization_id_fkey(name), lead:leads!tasks_lead_id_organization_id_fkey(id,stage,business:businesses!leads_business_id_organization_id_fkey(name)), opportunity:opportunities!tasks_opportunity_id_organization_id_fkey(id,name,stage,status)")
     .eq("organization_id", organizationId)
     .order("due_at", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });

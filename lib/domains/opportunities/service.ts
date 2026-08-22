@@ -104,6 +104,25 @@ export async function createOpportunity(organizationId: string, input: Opportuni
   return data;
 }
 
+export async function advanceOpportunity(organizationId: string, opportunityId: string) {
+  const current = await getOpportunity(organizationId, opportunityId);
+  if (!current) throw new Error("Opportunity not found.");
+  const currentStage = current.stage as OpportunityStage;
+  const nextStage = ALLOWED_TRANSITIONS[currentStage][0];
+  if (!nextStage) throw new Error("This opportunity is already at the final pipeline stage.");
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("opportunities")
+    .update({ stage: nextStage })
+    .eq("organization_id", organizationId)
+    .eq("id", opportunityId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function updateOpportunity(organizationId: string, opportunityId: string, input: OpportunityInput) {
   const supabase = await createClient();
   const current = await getOpportunity(organizationId, opportunityId);

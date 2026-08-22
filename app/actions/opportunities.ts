@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/require-user";
 import { getCurrentOrganization } from "@/lib/domains/organizations/current";
-import { createOpportunity, updateOpportunity } from "@/lib/domains/opportunities/service";
+import { advanceOpportunity, createOpportunity, updateOpportunity } from "@/lib/domains/opportunities/service";
 import type { OpportunityInput } from "@/lib/domains/opportunities/types";
 
 async function context() {
@@ -18,6 +18,15 @@ export async function createOpportunityAction(input: OpportunityInput) {
   const result = await createOpportunity(organization.id, { ...input, owner_user_id: input.owner_user_id ?? user.id });
   revalidatePath(`/leads/${input.lead_id}`);
   revalidatePath("/leads");
+  return result;
+}
+
+export async function advanceOpportunityAction(opportunityId: string) {
+  const { organization } = await context();
+  const result = await advanceOpportunity(organization.id, opportunityId);
+  revalidatePath("/pipeline");
+  revalidatePath(`/opportunities/${opportunityId}`);
+  if (result.lead_id) revalidatePath(`/leads/${result.lead_id}`);
   return result;
 }
 

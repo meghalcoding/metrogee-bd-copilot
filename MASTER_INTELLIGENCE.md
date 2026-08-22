@@ -8,7 +8,7 @@ The repository currently contains phase-specific source documents under `docs/`.
 
 ## Current phase
 
-**P1-H — Activity + Task Domain**
+**P1-I — Action Center + Pipeline foundation**
 
 ### Verified preceding phases
 
@@ -81,13 +81,39 @@ P1-G required several TypeScript corrections around optional literal-union input
 
 A GitHub repository was established for the project after removing `node_modules` and `.next` from Git history. The active branch is `phase-1b-design-system`.
 
+## P1-I change record
+
+### Scope
+
+P1-I adds the operational layer over the verified Opportunity and Task domains.
+
+Added:
+
+- `/actions` deterministic Action Center
+- `/pipeline` open-opportunity pipeline view
+- deterministic task buckets: overdue, due today, upcoming and no due date
+- task completion directly from Action Center
+- sequential Opportunity stage advancement using the existing P1-G transition contract
+- opportunity context on task listings
+- Pipeline and Action Center navigation destinations now resolve instead of returning 404
+
+### Rules
+
+- Action Center consumes existing Tasks; it does not generate tasks automatically.
+- Action prioritization is deterministic and transparent.
+- Pipeline only shows OPEN opportunities.
+- Opportunity stage movement remains constrained by P1-G allowed transitions.
+- WON/LOST closure remains on the Opportunity record.
+- No AI, scoring, messaging or external integration is introduced.
+
+### Verification state
+
+P1-I implementation checkpoint prepared against the P1-H source snapshot. Local lint, build and functional verification are required before marking P1-I complete.
+
 ## Next phase
 
-After P1-H lint/build and functional verification pass:
+After P1-I lint/build and functional verification pass, proceed to the next CRM capability defined by the project roadmap.
 
-**P1-I — Action Center / operational next-step layer**
-
-The Action Center must consume Tasks and later deterministic rules. It must not introduce AI.
 
 ## Continuity protocol
 
