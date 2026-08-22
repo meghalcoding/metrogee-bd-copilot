@@ -1,21 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { LeadInput, LeadListItem, LeadStage, LeadStatus } from "./types";
 
-const ALLOWED_TRANSITIONS: Record<LeadStage, LeadStage[]> = {
-  NEW: ["QUALIFYING", "NURTURE"],
-  QUALIFYING: ["QUALIFIED", "NURTURE"],
-  QUALIFIED: ["CONTACTED", "NURTURE"],
-  CONTACTED: ["CONNECTED", "NURTURE"],
-  CONNECTED: ["INTERESTED", "NURTURE"],
-  INTERESTED: ["DEMO", "NURTURE"],
-  DEMO: ["PROPOSAL", "NURTURE"],
-  PROPOSAL: ["NEGOTIATION", "WON", "LOST", "NURTURE"],
-  NEGOTIATION: ["WON", "LOST", "NURTURE"],
-  WON: [],
-  LOST: [],
-  NURTURE: ["QUALIFYING", "LOST"],
-};
-
 function cleanOptional(value: string | null | undefined) {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
@@ -42,14 +27,21 @@ function normalizeInput(input: LeadInput) {
     opportunity_score: input.opportunity_score ?? null,
     priority_score: input.priority_score ?? null,
     next_action_at: input.next_action_at || null,
-    lost_reason: cleanOptional(input.lost_reason),
   };
 }
 
+/**
+ * Lead stage is a relationship lifecycle, not a one-way sales funnel.
+ * Any lead stage can be corrected to another lead stage; commercial deal
+ * progression belongs to the Opportunity.
+ */
 export function assertLeadStageTransition(from: LeadStage, to: LeadStage) {
   if (from === to) return;
-  if (!ALLOWED_TRANSITIONS[from].includes(to)) {
-    throw new Error(`Lead cannot move directly from ${from} to ${to}.`);
+  if (!["NEW", "QUALIFYING", "QUALIFIED", "CONTACTED", "CONNECTED", "INTERESTED", "NURTURE"].includes(from)) {
+    throw new Error(`Unsupported lead stage: ${from}.`);
+  }
+  if (!["NEW", "QUALIFYING", "QUALIFIED", "CONTACTED", "CONNECTED", "INTERESTED", "NURTURE"].includes(to)) {
+    throw new Error(`Unsupported lead stage: ${to}.`);
   }
 }
 
@@ -87,18 +79,18 @@ export async function createLead(organizationId: string, input: LeadInput) {
   const normalized = normalizeInput(input);
 
   const { data: existing } = await supabase
-  .from("leads")
-  .select("id")
-  .eq("organization_id", organizationId)
-  .eq("business_id", input.business_id)
-  .in("status", ["ACTIVE", "PAUSED", "ON_HOLD"])
-  .is("deleted_at", null)
-  .limit(1)
-  .maybeSingle();
+    .from("leads")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .eq("business_id", input.business_id)
+    .in("status", ["ACTIVE", "PAUSED", "ON_HOLD"])
+    .is("deleted_at", null)
+    .limit(1)
+    .maybeSingle();
 
-if (existing) {
-  throw new Error("This business already has an active lead in this organization.");
-}
+  if (existing) {
+    throw new Error("This business already has an active lead in this organization.");
+  }
 
   const { data, error } = await supabase
     .from("leads")
@@ -112,7 +104,7 @@ if (existing) {
     organization_id: organizationId,
     lead_id: data.id,
     from_stage: null,
-    to_stage: "NEW",
+    to_stage: normalized.stage,
     reason: "Lead created",
   });
   if (historyError) throw historyError;
@@ -128,16 +120,11 @@ export async function updateLead(organizationId: string, leadId: string, input: 
   const normalized = normalizeInput(input);
   assertLeadStageTransition(current.stage as LeadStage, normalized.stage as LeadStage);
 
-  const nextStage = normalized.stage as LeadStage;
-  if (nextStage === "LOST" && !normalized.lost_reason) {
-    throw new Error("A lost reason is required when moving a lead to LOST.");
-  }
-
   const { data, error } = await supabase
     .from("leads")
     .update({
       ...normalized,
-      converted_at: nextStage === "WON" ? new Date().toISOString() : current.converted_at,
+      converted_at: current.converted_at,
     })
     .eq("organization_id", organizationId)
     .eq("id", leadId)
@@ -147,13 +134,13 @@ export async function updateLead(organizationId: string, leadId: string, input: 
 
   if (error) throw error;
 
-  if (current.stage !== nextStage) {
+  if (current.stage !== normalized.stage) {
     const { error: historyError } = await supabase.from("lead_stage_history").insert({
       organization_id: organizationId,
       lead_id: leadId,
       from_stage: current.stage,
-      to_stage: nextStage,
-      reason: normalized.lost_reason ?? null,
+      to_stage: normalized.stage,
+      reason: null,
     });
     if (historyError) throw historyError;
   }

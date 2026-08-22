@@ -11,6 +11,7 @@ import { getLead, listLeadStageHistory } from "@/lib/domains/leads/service";
 import { listLeadOpportunities } from "@/lib/domains/opportunities/service";
 import { listActivities } from "@/lib/domains/activities/service";
 import { listTasks } from "@/lib/domains/tasks/service";
+import { scoreLead } from "@/lib/domains/scoring/service";
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireUser();
@@ -21,11 +22,12 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   const lead = await getLead(organization.id, id);
   if (!lead) notFound();
 
-  const [history, opportunities, activities, tasks] = await Promise.all([
+  const [history, opportunities, activities, tasks, leadScore] = await Promise.all([
     listLeadStageHistory(organization.id, id),
     listLeadOpportunities(organization.id, id),
     listActivities(organization.id, { leadId: id }),
     listTasks(organization.id, { leadId: id }),
+    scoreLead(organization.id, id),
   ]);
 
   return (
@@ -43,9 +45,11 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
         <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
           <section className="rounded-xl border border-border bg-surface p-5">
-            <div className="flex items-center justify-between"><h2 className="text-sm font-semibold">Sales state</h2><Button asChild size="sm"><Link href={`/opportunities/new?lead=${id}`}><Plus className="size-4" />Opportunity</Link></Button></div>
-            <dl className="mt-5 grid grid-cols-2 gap-5 text-sm"><Metric label="Qualification" value={lead.qualification_status}/><Metric label="Opportunity score" value={lead.opportunity_score ?? "—"}/><Metric label="Priority score" value={lead.priority_score ?? "—"}/><Metric label="Next action" value={lead.next_action_at ? new Date(lead.next_action_at).toLocaleString() : "—"}/><Metric label="Last contacted" value={lead.last_contacted_at ? new Date(lead.last_contacted_at).toLocaleString() : "—"}/><Metric label="Source" value={lead.source ?? "Manual"}/></dl>
+            <div className="flex items-center justify-between"><h2 className="text-sm font-semibold">Sales state</h2><Button asChild size="sm"><Link href={`/opportunities/new?lead=${id}`}><Plus className="size-4" />{lead.qualification_status === "QUALIFIED" ? "Opportunity" : "Qualify & create opportunity"}</Link></Button></div>
+            <dl className="mt-5 grid grid-cols-2 gap-5 text-sm"><Metric label="Qualification" value={lead.qualification_status}/><Metric label="Opportunity score" value={lead.opportunity_score ?? "—"}/><Metric label="Priority score" value={lead.priority_score ?? "—"}/><Metric label="Computed score" value={`${leadScore.score}/100 · ${leadScore.label.replace("_", " ")}`}/><Metric label="Next action" value={lead.next_action_at ? new Date(lead.next_action_at).toLocaleString() : "—"}/><Metric label="Last contacted" value={lead.last_contacted_at ? new Date(lead.last_contacted_at).toLocaleString() : "—"}/><Metric label="Source" value={lead.source ?? "Manual"}/></dl>
           </section>
+
+          <section className="rounded-xl border border-border bg-surface p-5"><div className="flex items-center justify-between"><h2 className="text-sm font-semibold">Why this score?</h2><Badge variant="neutral">{leadScore.score}/100</Badge></div><div className="mt-4 space-y-3">{leadScore.factors.slice(0, 6).map((factor) => <div key={factor.key} className="flex items-start justify-between gap-4"><div><p className="text-sm font-medium">{factor.label}</p><p className="mt-1 text-xs text-text-secondary">{factor.explanation}</p></div><span className="shrink-0 text-sm font-semibold">+{factor.points}</span></div>)}</div></section>
 
           <section className="rounded-xl border border-border bg-surface p-5"><h2 className="text-sm font-semibold">Stage history</h2><div className="mt-5 space-y-4">{history.length ? history.map((item) => <div key={item.id} className="border-l-2 border-border pl-3"><div className="text-sm font-medium">{item.from_stage ?? "—"} → {item.to_stage}</div><div className="mt-1 text-xs text-text-muted">{new Date(item.changed_at).toLocaleString()}{item.reason ? ` · ${item.reason}` : ""}</div></div>) : <p className="text-sm text-text-secondary">No stage changes recorded yet.</p>}</div></section>
         </div>

@@ -159,3 +159,28 @@ No migration is required.
 ### Verification state
 
 P1-J implementation checkpoint prepared from the verified P1-I source snapshot. Local lint, build and functional verification are required before marking P1-J complete.
+
+
+## P1-K through P1-M change record
+
+### Scope
+
+Implemented the deterministic BD execution layer in one compatible batch:
+
+- P1-K explainable scoring engine under `lib/domains/scoring`
+- P1-L deterministic next-best-action rules under `lib/domains/rules`
+- P1-M Action Center upgraded to show recommendations alongside committed tasks
+- lead detail now shows computed score and factor explanations
+- Action Center recommendations expose rule ID, reason, due time and source records
+
+### Rules
+
+- Scores are computed from current CRM state and are not persisted.
+- Recommendations are deterministic and explainable.
+- Recommendations never auto-create tasks.
+- Existing tasks remain explicit user commitments.
+- No AI, external integrations or new database tables are introduced.
+
+### Verification state
+
+P1-K through P1-M implementation batch prepared against the verified P1-J source snapshot. Local lint, build and functional verification are required before marking the batch complete.

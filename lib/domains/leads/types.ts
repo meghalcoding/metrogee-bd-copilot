@@ -5,13 +5,9 @@ export const LEAD_STAGES = [
   "CONTACTED",
   "CONNECTED",
   "INTERESTED",
-  "DEMO",
-  "PROPOSAL",
-  "NEGOTIATION",
-  "WON",
-  "LOST",
   "NURTURE",
 ] as const;
+
 export type LeadStage = (typeof LEAD_STAGES)[number];
 
 export const LEAD_STATUSES = ["ACTIVE", "PAUSED", "ON_HOLD", "CLOSED", "ARCHIVED"] as const;
@@ -31,7 +27,6 @@ export type LeadInput = {
   opportunity_score?: number | null;
   priority_score?: number | null;
   next_action_at?: string | null;
-  lost_reason?: string | null;
 };
 
 export type LeadRecord = LeadInput & {

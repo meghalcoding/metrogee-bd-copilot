@@ -1,15 +1,21 @@
 export const OPPORTUNITY_STAGES = [
-  "QUALIFIED",
-  "CONTACTED",
-  "CONNECTED",
-  "INTERESTED",
-  "DEMO",
+  "DISCOVERY",
+  "SOLUTIONING",
   "PROPOSAL",
   "NEGOTIATION",
+  "CONTRACTING",
+  "DELIVERY",
 ] as const;
+
 export type OpportunityStage = (typeof OPPORTUNITY_STAGES)[number];
 
-export const OPPORTUNITY_STATUSES = ["OPEN", "WON", "LOST"] as const;
+export const OPPORTUNITY_STATUSES = [
+  "OPEN",
+  "ON_HOLD",
+  "WON",
+  "LOST",
+] as const;
+
 export type OpportunityStatus = (typeof OPPORTUNITY_STATUSES)[number];
 
 export type OpportunityInput = {
@@ -22,6 +28,7 @@ export type OpportunityInput = {
   stage?: OpportunityStage;
   status?: OpportunityStatus;
   owner_user_id?: string | null;
+  lost_reason?: string | null;
 };
 
 export type OpportunityRecord = OpportunityInput & {
