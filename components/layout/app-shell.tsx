@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 interface NavItem {
@@ -45,8 +46,9 @@ const utilityNavigation: NavItem[] = [
 ];
 
 function NavigationItem({ item }: { item: NavItem }) {
+  const pathname = usePathname();
   const Icon = item.icon;
-  const isActive = item.href === "/";
+  const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
   return (
     <a

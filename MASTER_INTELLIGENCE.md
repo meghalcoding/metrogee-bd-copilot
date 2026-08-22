@@ -8,7 +8,7 @@ The repository currently contains phase-specific source documents under `docs/`.
 
 ## Current phase
 
-**P1-I — Action Center + Pipeline foundation**
+**P1-J — Business Radar**
 
 ### Verified preceding phases
 
@@ -125,3 +125,37 @@ For every subsequent implementation prompt:
 4. Record the change in this file.
 5. Preserve the locked architecture unless the user explicitly changes it.
 6. Do not mark a phase complete until local lint/build and required functional checks pass.
+
+
+## P1-J change record
+
+### Scope
+
+P1-J adds a deterministic Business Radar over the existing Business, Lead, and Opportunity domains.
+
+Added:
+
+- `/radar` Business Radar page
+- `lib/domains/radar/types.ts`
+- `lib/domains/radar/service.ts`
+- `docs/domains/P1-J-BUSINESS-RADAR.md`
+
+### Rules
+
+Radar signals are transparent and derived only from existing CRM data:
+
+- no active lead
+- website status `WU` or `W0`
+- missing both phone and email
+- lead in `NEW` or `QUALIFYING`
+- one or more OPEN opportunities
+
+No opaque score is persisted. No external discovery, scraping, AI, lead generation, or task generation is introduced.
+
+### Database decision
+
+No migration is required.
+
+### Verification state
+
+P1-J implementation checkpoint prepared from the verified P1-I source snapshot. Local lint, build and functional verification are required before marking P1-J complete.

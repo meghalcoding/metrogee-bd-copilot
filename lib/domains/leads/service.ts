@@ -87,14 +87,18 @@ export async function createLead(organizationId: string, input: LeadInput) {
   const normalized = normalizeInput(input);
 
   const { data: existing } = await supabase
-    .from("leads")
-    .select("id")
-    .eq("organization_id", organizationId)
-    .eq("business_id", input.business_id)
-    .is("deleted_at", null)
-    .maybeSingle();
+  .from("leads")
+  .select("id")
+  .eq("organization_id", organizationId)
+  .eq("business_id", input.business_id)
+  .in("status", ["ACTIVE", "PAUSED", "ON_HOLD"])
+  .is("deleted_at", null)
+  .limit(1)
+  .maybeSingle();
 
-  if (existing) throw new Error("This business already has an active lead in this organization.");
+if (existing) {
+  throw new Error("This business already has an active lead in this organization.");
+}
 
   const { data, error } = await supabase
     .from("leads")
