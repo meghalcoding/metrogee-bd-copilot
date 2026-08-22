@@ -23,7 +23,7 @@ export function OpportunityForm({ leadId, opportunity }: { leadId: string; oppor
       lead_id: leadId,
       name: String(formData.get("name") || ""),
       value_amount: Number(formData.get("value_amount") || 0) || null,
-      currency: String(formData.get("currency") || "USD"),
+      currency: String(formData.get("currency") || "INR"),
       probability: Number(formData.get("probability") || 0) || null,
       expected_close_date: String(formData.get("expected_close_date") || "") || null,
       stage: stage as OpportunityInput["stage"],
@@ -46,7 +46,7 @@ export function OpportunityForm({ leadId, opportunity }: { leadId: string; oppor
     {error && <div className="rounded-md border border-danger/20 bg-danger/5 px-3 py-2 text-sm text-danger">{error}</div>}
     <div className="grid gap-5 sm:grid-cols-2">
       <Field label="Opportunity name"><Input name="name" required defaultValue={opportunity?.name ?? ""} placeholder="Website redesign project" /></Field>
-      <Field label="Currency"><Input name="currency" defaultValue={opportunity?.currency ?? "USD"} maxLength={3} /></Field>
+      <Field label="Currency"><Input name="currency" defaultValue={opportunity?.currency ?? "INR"} maxLength={3} /></Field>
       <Field label="Estimated value"><Input name="value_amount" type="number" min="0" step="0.01" defaultValue={opportunity?.value_amount ?? ""} /></Field>
       <Field label="Probability (0–100)"><Input name="probability" type="number" min="0" max="100" defaultValue={opportunity?.probability ?? ""} /></Field>
       <Field label="Expected close"><Input name="expected_close_date" type="date" defaultValue={opportunity?.expected_close_date ?? ""} /></Field>

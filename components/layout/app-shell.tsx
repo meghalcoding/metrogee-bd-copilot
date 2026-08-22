@@ -30,6 +30,7 @@ const primaryNavigation: NavItem[] = [
   { label: "Command Center", href: "/", icon: LayoutDashboard },
   { label: "Action Center", href: "/actions", icon: Target },
   { label: "Business Radar", href: "/radar", icon: Search },
+  { label: "Prospecting", href: "/prospecting", icon: Target },
   { label: "Businesses", href: "/businesses", icon: Building2 },
   { label: "Leads", href: "/leads", icon: Users },
   { label: "Pipeline", href: "/pipeline", icon: KanbanSquare },

@@ -46,7 +46,7 @@ function normalizeBusinessInput(input: BusinessInput) {
     city: cleanOptional(input.city),
     state: cleanOptional(input.state),
     postal_code: cleanOptional(input.postal_code),
-    country: cleanOptional(input.country),
+    country: cleanOptional(input.country) ?? "India",
     phone: cleanOptional(input.phone),
     email: cleanOptional(input.email)?.toLowerCase() ?? null,
     website_url: cleanOptional(input.website_url),
@@ -58,7 +58,7 @@ export async function listBusinesses(organizationId: string, filters: BusinessLi
   const supabase = await createClient();
   let query = supabase
     .from("businesses")
-    .select("id,organization_id,name,legal_name,city,state,country,phone,email,website_url,website_status,primary_category_id,rating,review_count,owner_user_id,created_at,updated_at")
+    .select("id,organization_id,name,legal_name,city,state,country,postal_code,phone,email,website_url,website_status,primary_category_id,rating,review_count,owner_user_id,source_primary,source_last_synced_at,metadata_json,created_at,updated_at")
     .eq("organization_id", organizationId)
     .is("deleted_at", null)
     .order("updated_at", { ascending: false });
@@ -72,6 +72,20 @@ export async function listBusinesses(organizationId: string, filters: BusinessLi
   if (filters.city?.trim()) query = query.ilike("city", filters.city.trim());
 
   const { data, error } = await query;
+  if (error) throw error;
+  return data ?? [];
+}
+
+
+export async function listBusinessCategories(organizationId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("business_categories")
+    .select("id,name,slug,is_system,is_active")
+    .or(`organization_id.is.null,organization_id.eq.${organizationId}`)
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+
   if (error) throw error;
   return data ?? [];
 }

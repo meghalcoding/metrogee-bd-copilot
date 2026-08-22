@@ -20,6 +20,8 @@ export type BusinessInput = {
   rating?: number | null;
   review_count?: number | null;
   source_primary?: string | null;
+  source_last_synced_at?: string | null;
+  metadata_json?: Record<string, unknown>;
 };
 
 export type BusinessRecord = BusinessInput & {

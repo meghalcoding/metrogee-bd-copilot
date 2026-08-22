@@ -36,7 +36,7 @@ function normalizeInput(input: OpportunityInput) {
     lead_id: input.lead_id,
     name,
     value_amount: input.value_amount ?? null,
-    currency: (input.currency ?? "USD").trim().toUpperCase() || "USD",
+    currency: (input.currency ?? "INR").trim().toUpperCase() || "INR",
     probability: input.probability ?? null,
     expected_close_date: input.expected_close_date || null,
     stage: input.stage ?? "DISCOVERY",

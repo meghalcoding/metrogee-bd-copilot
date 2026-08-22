@@ -8,7 +8,7 @@ The repository currently contains phase-specific source documents under `docs/`.
 
 ## Current phase
 
-**P1-J — Business Radar**
+**P2-A — Prospecting Engine**
 
 ### Verified preceding phases
 
@@ -184,3 +184,32 @@ Implemented the deterministic BD execution layer in one compatible batch:
 ### Verification state
 
 P1-K through P1-M implementation batch prepared against the verified P1-J source snapshot. Local lint, build and functional verification are required before marking the batch complete.
+
+
+## P2-A change record
+
+### Scope
+
+Added the first prospecting workflow as the highest-priority post-CRM capability:
+
+- `/prospecting` business discovery workbench
+- India multi-provider prospecting adapters (OpenStreetMap/Overpass, Geoapify, Foursquare, Mappls)
+- existing business category list reused as prospecting categories
+- ZIP-code category search with review-before-create behavior
+- explicit Add / Ignore actions
+- provider source preservation through `business_sources`
+- raw provider payload preservation through `metadata_json`
+- unmapped provider details preserved in a Business note
+- initial duplicate protection against existing normalized business names
+
+### Rules
+
+- Search results are not CRM Businesses until the BD user explicitly clicks Add.
+- Prospecting does not create leads automatically; it feeds the existing Business → Lead → Opportunity workflow.
+- Prospecting uses permitted multi-provider POI sources.
+- Google Maps is exposed only as a manual reference link; Google Maps content is not scraped or copied into the CRM.
+- No AI or automatic task generation is introduced.
+
+### Database decision
+
+No new table is required. The existing `business_sources`, `businesses.metadata_json`, and `notes` structures are sufficient for the first prospecting checkpoint.
