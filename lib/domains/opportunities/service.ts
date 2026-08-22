@@ -108,8 +108,8 @@ export async function createOpportunity(organizationId: string, input: Opportuni
   if (leadError) throw leadError;
   if (!lead) throw new Error("Lead not found.");
   if (lead.status === "CLOSED" || lead.status === "ARCHIVED") throw new Error("This lead is closed and cannot receive a new opportunity.");
-  if (lead.qualification_status !== "QUALIFIED") {
-    throw new Error("This lead must be qualified before an opportunity can be created.");
+  if (lead.qualification_status !== "QUALIFIED" || !["QUALIFIED", "CONTACTED", "CONNECTED", "INTERESTED"].includes(lead.stage)) {
+    throw new Error("This lead must be QUALIFIED before an opportunity can be created. Use the guided qualification flow to continue.");
   }
 
   const { data, error } = await supabase
@@ -187,6 +187,24 @@ export async function closeOpportunity(organizationId: string, opportunityId: st
       lost_reason: status === "LOST" ? reason : null,
       closed_at: current.closed_at ?? new Date().toISOString(),
     })
+    .eq("organization_id", organizationId)
+    .eq("id", opportunityId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function reopenOpportunity(organizationId: string, opportunityId: string) {
+  const supabase = await createClient();
+  const current = await getOpportunity(organizationId, opportunityId);
+  if (!current) throw new Error("Opportunity not found.");
+  if (current.status === "OPEN") return current;
+  if (current.status !== "WON" && current.status !== "LOST") throw new Error("Only closed opportunities can be reopened.");
+
+  const { data, error } = await supabase
+    .from("opportunities")
+    .update({ status: "OPEN", closed_at: null, lost_reason: null })
     .eq("organization_id", organizationId)
     .eq("id", opportunityId)
     .select("*")

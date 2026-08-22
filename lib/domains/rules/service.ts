@@ -59,6 +59,36 @@ export async function listRecommendedActions(organizationId: string): Promise<Re
 
   for (const opportunity of opportunities) {
     if (opportunity.status !== "OPEN") continue;
+
+    const opportunityStage = opportunity.stage as string;
+    const lead = leads.find((item) => item.id === opportunity.lead_id);
+    if (lead) {
+      const leadStage = lead.stage ?? "NEW";
+      const shouldBeQualified = ["DISCOVERY", "SOLUTIONING"].includes(opportunityStage);
+      const shouldBeInterested = ["PROPOSAL", "NEGOTIATION", "CONTRACTING", "DELIVERY"].includes(opportunityStage);
+      const leadIsBeforeQualified = ["NEW", "QUALIFYING"].includes(leadStage);
+      const leadIsBeforeInterested = ["NEW", "QUALIFYING", "QUALIFIED", "CONTACTED", "CONNECTED"].includes(leadStage);
+
+      if ((shouldBeQualified && leadIsBeforeQualified) || (shouldBeInterested && leadIsBeforeInterested)) {
+        const targetStage = shouldBeInterested ? "INTERESTED" : "QUALIFIED";
+        actions.push({
+          id: `sync:${opportunity.id}:${targetStage}`,
+          ruleId: "NPA-SYNC-001",
+          type: "FOLLOW_UP",
+          priority: "HIGH",
+          title: `Update lead stage for ${opportunity.name}`,
+          reason: `The opportunity is at ${opportunityStage}, but the related lead is still ${leadStage}. Update the lead to ${targetStage} so the relationship record reflects the deal progress.`,
+          dueAt: null,
+          leadId: lead.id,
+          opportunityId: opportunity.id,
+          businessId: opportunity.lead?.business?.id ?? lead.business_id ?? null,
+          taskId: null,
+          score: opportunity.probability ?? null,
+          sourceRecords: [lead.id, opportunity.id],
+          href: `/leads/${lead.id}/edit?returnTo=${encodeURIComponent(`/opportunities/${opportunity.id}`)}`,
+        });
+      }
+    }
     if (!opportunity.expected_close_date) continue;
     const days = (new Date(opportunity.expected_close_date).getTime() - now) / 86400000;
     if (days >= 0 && days <= 7) actions.push({ id: `opp:${opportunity.id}`, ruleId: "NPA-OPPORTUNITY-001", type: "REVIEW_OPPORTUNITY", priority: days <= 2 ? "URGENT" : "HIGH", title: `Review ${opportunity.name}`, reason: `Expected close is ${Math.max(0, Math.ceil(days))} day(s) away and the opportunity is still OPEN.`, dueAt: opportunity.expected_close_date, leadId: opportunity.lead_id, opportunityId: opportunity.id, businessId: opportunity.lead?.business?.id ?? null, taskId: null, score: opportunity.probability ?? null, sourceRecords: [opportunity.id], href: `/opportunities/${opportunity.id}` });

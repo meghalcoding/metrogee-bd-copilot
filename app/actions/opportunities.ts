@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/require-user";
 import { getCurrentOrganization } from "@/lib/domains/organizations/current";
-import { advanceOpportunity, closeOpportunity, createOpportunity, updateOpportunity } from "@/lib/domains/opportunities/service";
+import { advanceOpportunity, closeOpportunity, createOpportunity, reopenOpportunity, updateOpportunity } from "@/lib/domains/opportunities/service";
 import type { OpportunityInput } from "@/lib/domains/opportunities/types";
 
 async function context() {
@@ -34,6 +34,15 @@ export async function advanceOpportunityAction(opportunityId: string) {
 export async function closeOpportunityAction(opportunityId: string, status: "WON" | "LOST", lostReason?: string | null) {
   const { organization } = await context();
   const result = await closeOpportunity(organization.id, opportunityId, status, lostReason);
+  revalidatePath("/pipeline");
+  revalidatePath(`/opportunities/${opportunityId}`);
+  revalidatePath(`/leads/${result.lead_id}`);
+  return result;
+}
+
+export async function reopenOpportunityAction(opportunityId: string) {
+  const { organization } = await context();
+  const result = await reopenOpportunity(organization.id, opportunityId);
   revalidatePath("/pipeline");
   revalidatePath(`/opportunities/${opportunityId}`);
   revalidatePath(`/leads/${result.lead_id}`);
