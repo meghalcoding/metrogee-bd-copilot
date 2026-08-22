@@ -1,0 +1,16 @@
+P1-F Business + Contact Domain checkpoint.
+
+Apply this checkpoint to the current repository, then run:
+
+npm run lint
+npm run build
+
+Expected scope:
+- Business domain CRUD/soft archive
+- Contact domain CRUD/soft archive
+- Business list/create/detail/edit screens
+- Contact management on business detail
+- No Lead/Opportunity logic
+- No integrations
+- No AI
+- No bulk messaging
