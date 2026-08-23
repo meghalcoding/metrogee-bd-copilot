@@ -5,12 +5,14 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ActivityForm } from "@/components/activities/activity-form";
+import { SendEmailButton } from "@/components/email/send-email-button";
 import { requireUser } from "@/lib/auth/require-user";
 import { getCurrentOrganization } from "@/lib/domains/organizations/current";
 import { getLead, listLeadStageHistory } from "@/lib/domains/leads/service";
 import { listLeadOpportunities } from "@/lib/domains/opportunities/service";
 import { listActivities } from "@/lib/domains/activities/service";
 import { listTasks } from "@/lib/domains/tasks/service";
+import { listRelatedMeetings } from "@/lib/domains/meetings/service";
 import { scoreLead } from "@/lib/domains/scoring/service";
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,11 +24,12 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   const lead = await getLead(organization.id, id);
   if (!lead) notFound();
 
-  const [history, opportunities, activities, tasks, leadScore] = await Promise.all([
+  const [history, opportunities, activities, tasks, meetings, leadScore] = await Promise.all([
     listLeadStageHistory(organization.id, id),
     listLeadOpportunities(organization.id, id),
     listActivities(organization.id, { leadId: id }),
     listTasks(organization.id, { leadId: id }),
+    listRelatedMeetings(organization.id, { leadId: id }),
     scoreLead(organization.id, id),
   ]);
 
@@ -38,9 +41,12 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         <section className="flex flex-col justify-between gap-4 rounded-xl border border-border bg-surface p-5 sm:flex-row sm:items-start sm:p-6">
           <div>
             <div className="flex flex-wrap items-center gap-2"><h1>{lead.business?.name ?? "Lead"}</h1><Badge>{lead.stage}</Badge><Badge>{lead.status}</Badge></div>
-            <p className="mt-2 text-sm text-text-secondary">{lead.primary_contact?.full_name ?? "No primary contact"}{lead.primary_contact?.job_title ? ` · ${lead.primary_contact.job_title}` : ""}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-text-secondary">
+              <span>{lead.primary_contact?.full_name ?? "No primary contact"}{lead.primary_contact?.job_title ? ` · ${lead.primary_contact.job_title}` : ""}</span>
+              {lead.primary_contact?.email ? <SendEmailButton contactId={lead.primary_contact.id} contactName={lead.primary_contact.full_name} email={lead.primary_contact.email} leadId={id} /> : null}
+            </div>
           </div>
-          <Button asChild variant="secondary"><Link href={`/leads/${id}/edit`}><Pencil className="size-4" />Edit lead</Link></Button>
+          <div className="flex flex-wrap gap-2"><Button asChild variant="secondary"><Link href={`/leads/${id}/edit`}><Pencil className="size-4" />Edit lead</Link></Button><Button asChild><Link href={`/meetings/new?lead=${id}&business=${lead.business_id}&contact=${lead.primary_contact?.id ?? ""}`} >Schedule meeting</Link></Button></div>
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
@@ -70,6 +76,11 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             {activities.length ? activities.slice(0, 8).map((activity) => <div key={activity.id} className="border-b border-border px-5 py-4 last:border-0"><div className="flex items-center gap-2"><Badge>{activity.type}</Badge><span className="text-xs text-text-muted">{new Date(activity.occurred_at).toLocaleString()}</span></div><p className="mt-2 text-sm font-medium">{activity.subject ?? "Activity"}</p>{activity.body_preview ? <p className="mt-1 text-xs text-text-secondary">{activity.body_preview}</p> : null}</div>) : <div className="px-5 py-10 text-center text-sm text-text-secondary">No activity recorded for this lead.</div>}
           </section>
         </div>
+
+        <section className="rounded-xl border border-border bg-surface">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4"><div><h2 className="text-sm font-semibold">Meetings</h2><p className="mt-1 text-xs text-text-muted">Scheduled meetings linked to this lead.</p></div><Link href={`/meetings/new?lead=${id}&business=${lead.business_id}&contact=${lead.primary_contact?.id ?? ""}`} className="inline-flex items-center gap-1 text-xs font-medium text-primary">Schedule meeting</Link></div>
+          {meetings.length ? meetings.map((meeting) => <Link key={meeting.id} href={`/meetings/${meeting.id}`} className="flex items-center justify-between border-b border-border px-5 py-4 last:border-0 hover:bg-surface-muted/60"><div><p className="text-sm font-medium">{meeting.title}</p><p className="mt-1 text-xs text-text-muted">{meeting.status} · {new Date(meeting.start_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</p></div><Badge variant="neutral">{meeting.contact?.full_name ?? "No contact"}</Badge></Link>) : <div className="px-5 py-10 text-center text-sm text-text-secondary">No meetings scheduled for this lead.</div>}
+        </section>
 
         <section className="rounded-xl border border-border bg-surface">
           <div className="flex items-center justify-between border-b border-border px-5 py-4"><h2 className="text-sm font-semibold">Opportunities</h2><Link href={lead.business?.id ? `/businesses/${lead.business.id}` : "/businesses"} className="inline-flex items-center gap-1 text-xs font-medium text-primary">Business <ExternalLink className="size-3"/></Link></div>

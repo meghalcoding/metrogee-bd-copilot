@@ -8,7 +8,7 @@ The repository currently contains phase-specific source documents under `docs/`.
 
 ## Current phase
 
-**P2-A — Prospecting Engine**
+**P2-E.2 — Universal Custom SMTP + Send Email**
 
 ### Verified preceding phases
 
@@ -263,3 +263,95 @@ Implementation checkpoint prepared against the latest source checkpoint containi
 ## Next phase
 
 P2-E.2 — Email integration.
+
+
+## P2-E.2 change record
+
+### Scope
+
+Implemented the first real outbound communication integration as provider-neutral Custom SMTP:
+
+- Custom SMTP integration configuration under `/integrations`
+- SMTP connection verification before save
+- encrypted SMTP password/key storage using server-only `INTEGRATION_ENCRYPTION_KEY`
+- standard STARTTLS, implicit TLS and no-TLS modes
+- provider-neutral SMTP transport
+- Send Email action from a Lead primary contact
+- Send Email action from Business contacts
+- automatic EMAIL activity creation after successful send
+- automatic Lead `last_contacted_at` update when the email is associated with a Lead
+- provider message ID retained on the CRM activity
+- SMTP connection/send errors reflected in integration state
+- Gmail and Microsoft Outlook removed from the active email provider registry for this phase
+
+### Locked decisions
+
+- No Gmail or Microsoft Outlook integration is implemented in P2-E.2.
+- Users may enter credentials for any compatible SMTP service; the CRM is not tied to a specific vendor.
+- SMTP passwords/API keys are encrypted before database storage.
+- `organization_integrations.config_json` is not selected by the normal integration listing, so encrypted credentials are not passed to client components.
+- The browser never receives the plaintext SMTP password/key after save.
+- Sending email records immutable CRM history through the existing Activity domain.
+- Sending an email is a real outbound communication and therefore updates Lead `last_contacted_at` when a Lead is supplied.
+- Core CRM remains usable without SMTP.
+
+### Configuration
+
+Set `INTEGRATION_ENCRYPTION_KEY` in the server environment to a 64-character hexadecimal value generated from 32 random bytes.
+
+Example PowerShell generation:
+
+`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+
+### Verification state
+
+P2-E.2 checkpoint prepared from the latest P2-E.1 source checkpoint. Local `npm install`, lint, build, Supabase migration application, SMTP test connection and end-to-end send verification are required before marking P2-E.2 complete.
+
+## Next phase
+
+P2-E.3 — Calendar integration.
+
+## P2-E.3 change record
+
+### Scope
+
+Implemented the first functional CRM calendar/meeting workflow without requiring Google or Microsoft OAuth:
+
+- new first-class `meetings` domain and organization-scoped database table
+- `/meetings` upcoming/history workspace
+- `/meetings/new` scheduling workflow
+- `/meetings/[id]` meeting detail and outcome workflow
+- business → lead → opportunity filtering in the meeting form
+- contact filtering by selected business
+- India timezone default (`Asia/Kolkata`)
+- UTC storage for meeting timestamps
+- downloadable RFC-style `.ics` calendar file
+- one-click Google Calendar event handoff link
+- one-click Outlook calendar event handoff link
+- meeting scheduled SYSTEM activity
+- completed/no-show MEETING activity
+- lead/business/opportunity detail pages now expose scheduled meetings
+- Meetings added to primary navigation
+
+### Locked decisions
+
+- P2-E.3 does not require Google OAuth or Microsoft OAuth.
+- External calendar synchronization is intentionally provider-neutral at this stage.
+- `.ics` export is the universal interoperability path and works with calendar applications that support standard calendar files.
+- Google Calendar and Outlook are supported through event-composer links rather than authenticated API synchronization.
+- The CRM meeting record is the source of truth for meeting status.
+- A scheduled meeting is not treated as a completed sales activity. A MEETING activity is created only when the BD user records a completed or no-show outcome.
+- Scheduling creates a SYSTEM activity so the CRM retains an immutable record of the scheduling event.
+- No AI behavior is introduced.
+
+### Database decision
+
+Adds `public.meetings` with organization-scoped RLS, relationship references to Business/Lead/Contact/Opportunity, start/end validation, status validation, and timestamp indexing.
+
+### Verification state
+
+P2-E.3 checkpoint prepared from the verified P2-E.2 source. Apply the database migration, run `npm install`, lint, build, and test scheduling, `.ics` download, Google/Outlook handoff, completion, cancellation, and no-show flows before marking P2-E.3 complete.
+
+## Next phase
+
+P2-E.4 — Calling and WhatsApp workflow.

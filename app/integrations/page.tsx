@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { IntegrationCard } from "@/components/integrations/integration-card";
+import { SmtpConfigCard } from "@/components/integrations/smtp-config-card";
 import { getCurrentOrganization } from "@/lib/domains/organizations/current";
 import {
   listIntegrations,
@@ -35,11 +36,25 @@ export default async function IntegrationsPage() {
 
         <div className="grid gap-4 md:grid-cols-2">
           {integrations.map(({ definition, connection }) => (
-            <IntegrationCard
-              key={definition.provider}
-              definition={definition}
-              connection={connection}
-            />
+            definition.provider === "CUSTOM_SMTP" ? (
+              <article key={definition.provider} className="rounded-xl border border-border bg-surface p-5 md:col-span-2">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="font-semibold">{definition.displayName}</h2>
+                    <p className="mt-1 text-sm text-text-secondary">{definition.description}</p>
+                  </div>
+                  <span className={`rounded-full px-2 py-1 text-[11px] font-medium ${connection?.status === "CONNECTED" ? "bg-success/10 text-success" : "bg-surface-muted text-text-secondary"}`}>
+                    {connection?.status === "CONNECTED" ? "Connected" : "Not connected"}
+                  </span>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {definition.capabilities.map((capability) => <span key={capability} className="rounded-md border border-border bg-background px-2 py-1 text-xs text-text-secondary">{capability}</span>)}
+                </div>
+                <SmtpConfigCard configured={connection?.status === "CONNECTED"} />
+              </article>
+            ) : (
+              <IntegrationCard key={definition.provider} definition={definition} connection={connection} />
+            )
           ))}
         </div>
       </div>

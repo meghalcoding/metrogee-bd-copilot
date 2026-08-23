@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ContactForm } from "./contact-form";
 import { archiveContactAction } from "@/app/actions/contacts";
+import { SendEmailButton } from "@/components/email/send-email-button";
 import type { ContactRecord } from "@/lib/domains/contacts/types";
 
 export function ContactList({ businessId, contacts, startAdding = false }: { businessId: string; contacts: ContactRecord[]; startAdding?: boolean }) {
@@ -44,6 +45,7 @@ export function ContactList({ businessId, contacts, startAdding = false }: { bus
               </div>
               <div className="flex items-center gap-2">
                 {contact.preferred_channel ? <Badge variant="neutral">{contact.preferred_channel}</Badge> : null}
+                {contact.email ? <SendEmailButton contactId={contact.id} contactName={contact.full_name} email={contact.email} /> : null}
                 <Button variant="ghost" size="icon" onClick={() => setEditing(contact)} aria-label={`Edit ${contact.full_name}`}><Pencil className="size-4" /></Button>
                 <Button variant="ghost" size="icon" onClick={() => remove(contact)} aria-label={`Archive ${contact.full_name}`}><Trash2 className="size-4 text-danger" /></Button>
               </div>

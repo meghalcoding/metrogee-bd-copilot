@@ -7,7 +7,8 @@ import {
   disconnectIntegration,
   upsertIntegration,
 } from "@/lib/domains/integrations/service";
-import type { IntegrationProvider } from "@/lib/domains/integrations/types";
+import type { IntegrationProvider, SmtpConfig } from "@/lib/domains/integrations/types";
+import { saveSmtpConfig, testSmtpConfig } from "@/lib/domains/integrations/smtp";
 
 async function context() {
   const user = await requireUser();
@@ -26,6 +27,19 @@ export async function setIntegrationEnabledAction(provider: IntegrationProvider,
 export async function disconnectIntegrationAction(provider: IntegrationProvider) {
   const { organization } = await context();
   const result = await disconnectIntegration(organization.id, provider);
+  revalidatePath("/integrations");
+  return result;
+}
+
+
+export async function testSmtpConfigAction(input: SmtpConfig) {
+  await context();
+  return testSmtpConfig(input);
+}
+
+export async function saveSmtpConfigAction(input: SmtpConfig) {
+  const { organization } = await context();
+  const result = await saveSmtpConfig(organization.id, input);
   revalidatePath("/integrations");
   return result;
 }

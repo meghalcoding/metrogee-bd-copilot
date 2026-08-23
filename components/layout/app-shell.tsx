@@ -4,6 +4,7 @@ import {
   BarChart3,
   Building2,
   CheckSquare,
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Command,
@@ -35,6 +36,7 @@ const primaryNavigation: NavItem[] = [
   { label: "Leads", href: "/leads", icon: Users },
   { label: "Pipeline", href: "/pipeline", icon: KanbanSquare },
   { label: "Tasks", href: "/tasks", icon: CheckSquare },
+  { label: "Meetings", href: "/meetings", icon: CalendarDays },
 ];
 
 const secondaryNavigation: NavItem[] = [

@@ -2,18 +2,11 @@ import type { IntegrationDefinition, IntegrationProvider } from "./types";
 
 export const INTEGRATION_DEFINITIONS: IntegrationDefinition[] = [
   {
-    provider: "GMAIL",
+    provider: "CUSTOM_SMTP",
     type: "EMAIL",
-    displayName: "Gmail",
-    description: "Send and track BD email from the CRM.",
-    capabilities: ["Send email", "Record email activity"],
-  },
-  {
-    provider: "MICROSOFT_OUTLOOK",
-    type: "EMAIL",
-    displayName: "Microsoft Outlook",
-    description: "Connect Microsoft 365 mail for CRM email workflows.",
-    capabilities: ["Send email", "Record email activity"],
+    displayName: "Custom SMTP",
+    description: "Connect any compatible SMTP provider and send CRM email without a vendor lock-in.",
+    capabilities: ["Test SMTP", "Send email", "Record email activity"],
   },
   {
     provider: "GOOGLE_CALENDAR",

@@ -2,8 +2,7 @@ export const INTEGRATION_TYPES = ["EMAIL", "CALENDAR", "CALLING", "WHATSAPP", "E
 export type IntegrationType = (typeof INTEGRATION_TYPES)[number];
 
 export const INTEGRATION_PROVIDERS = [
-  "GMAIL",
-  "MICROSOFT_OUTLOOK",
+  "CUSTOM_SMTP",
   "GOOGLE_CALENDAR",
   "MICROSOFT_CALENDAR",
   "TWILIO",
@@ -41,4 +40,16 @@ export type IntegrationDefinition = {
   description: string;
   capabilities: string[];
   configuredByEnvironment?: boolean;
+};
+
+export type SmtpSecurity = "STARTTLS" | "TLS" | "NONE";
+
+export type SmtpConfig = {
+  host: string;
+  port: number;
+  security: SmtpSecurity;
+  username: string;
+  password: string;
+  fromName: string;
+  fromEmail: string;
 };

@@ -10,6 +10,7 @@ import { listContacts } from "@/lib/domains/contacts/service";
 import { requireUser } from "@/lib/auth/require-user";
 import { ContactList } from "@/components/contacts/contact-list";
 import { EnrichBusinessButton } from "@/components/businesses/enrich-business-button";
+import { listRelatedMeetings } from "@/lib/domains/meetings/service";
 
 export default async function BusinessDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireUser();
@@ -19,7 +20,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
 
   const business = await getBusiness(organization.id, id);
   if (!business) notFound();
-  const contacts = await listContacts(organization.id, id);
+  const [contacts, meetings] = await Promise.all([listContacts(organization.id, id), listRelatedMeetings(organization.id, { businessId: id })]);
 
   return (
     <AppShell>
@@ -30,7 +31,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
             <div className="flex flex-wrap items-center gap-2"><h1 className="text-2xl font-semibold tracking-tight">{business.name}</h1><Badge>{business.website_status}</Badge></div>
             <p className="mt-2 text-sm text-text-secondary">Business record · sales state belongs to the Lead domain.</p>
           </div>
-          <div className="flex flex-wrap gap-2"><EnrichBusinessButton businessId={id} /><Button asChild variant="secondary"><Link href={`/businesses/${id}/edit`}><Pencil className="size-4" />Edit</Link></Button><Button asChild><Link href={`/leads/new?business=${id}`}><UserPlus className="size-4" />Create lead</Link></Button></div>
+          <div className="flex flex-wrap gap-2"><EnrichBusinessButton businessId={id} /><Button asChild variant="secondary"><Link href={`/meetings/new?business=${id}`}>Schedule meeting</Link></Button><Button asChild variant="secondary"><Link href={`/businesses/${id}/edit`}><Pencil className="size-4" />Edit</Link></Button><Button asChild><Link href={`/leads/new?business=${id}`}><UserPlus className="size-4" />Create lead</Link></Button></div>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-2">
@@ -55,6 +56,11 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
         </section>
 
         <ContactList businessId={id} contacts={contacts} />
+
+        <section className="rounded-xl border border-border bg-surface">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4"><div><h2 className="text-sm font-semibold">Meetings</h2><p className="mt-1 text-xs text-text-muted">Meetings scheduled with this business.</p></div><Link href={`/meetings/new?business=${id}`} className="text-xs font-medium text-primary">Schedule meeting</Link></div>
+          {meetings.length ? meetings.map((meeting) => <Link key={meeting.id} href={`/meetings/${meeting.id}`} className="flex items-center justify-between border-b border-border px-5 py-4 last:border-0 hover:bg-surface-muted/60"><div><p className="text-sm font-medium">{meeting.title}</p><p className="mt-1 text-xs text-text-muted">{meeting.status} · {new Date(meeting.start_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</p></div><span className="text-xs text-text-muted">{meeting.contact?.full_name ?? "No contact"}</span></Link>) : <div className="px-5 py-10 text-center text-sm text-text-secondary">No meetings scheduled.</div>}
+        </section>
       </div>
     </AppShell>
   );
