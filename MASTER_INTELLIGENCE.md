@@ -213,3 +213,53 @@ Added the first prospecting workflow as the highest-priority post-CRM capability
 ### Database decision
 
 No new table is required. The existing `business_sources`, `businesses.metadata_json`, and `notes` structures are sufficient for the first prospecting checkpoint.
+
+
+## P2-E.1 change record
+
+### Scope
+
+Added the provider-neutral Integration Infrastructure layer:
+
+- `/integrations` integration settings page
+- `lib/domains/integrations/types.ts`
+- `lib/domains/integrations/definitions.ts`
+- `lib/domains/integrations/service.ts`
+- `app/actions/integrations.ts`
+- `components/integrations/integration-card.tsx`
+- `docs/domains/P2-E1-INTEGRATION-INFRASTRUCTURE.md`
+- `supabase/migrations/20260823072500_p2_e1_integration_infrastructure.sql`
+
+### Rules
+
+- CRM domains remain provider-neutral; individual domains do not depend directly on Gmail, Outlook, Twilio, WhatsApp, or another provider.
+- Integration registration is separate from provider authentication.
+- Enabling a provider registers it for the organization but does not claim that OAuth/API credentials are connected.
+- Provider-specific secrets/tokens are not stored in ordinary CRM fields or exposed by the integration UI.
+- Existing CRM workflows remain functional without integrations.
+- No AI behavior is introduced.
+
+### Registered provider definitions
+
+- Gmail
+- Microsoft Outlook
+- Google Calendar
+- Microsoft Calendar
+- Twilio
+- WhatsApp Cloud API
+- Geoapify
+- Foursquare
+- Mappls
+- OpenStreetMap
+
+### Database decision
+
+Adds `organization_integrations` with organization-scoped RLS, provider uniqueness per organization, status/type checks, and an `updated_at` trigger.
+
+### Verification state
+
+Implementation checkpoint prepared against the latest source checkpoint containing P2-A through P2-D. Local lint/build and Supabase migration verification are required before marking P2-E.1 complete.
+
+## Next phase
+
+P2-E.2 — Email integration.
