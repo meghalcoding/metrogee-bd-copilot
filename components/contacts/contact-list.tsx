@@ -8,8 +8,8 @@ import { ContactForm } from "./contact-form";
 import { archiveContactAction } from "@/app/actions/contacts";
 import type { ContactRecord } from "@/lib/domains/contacts/types";
 
-export function ContactList({ businessId, contacts }: { businessId: string; contacts: ContactRecord[] }) {
-  const [adding, setAdding] = useState(false);
+export function ContactList({ businessId, contacts, startAdding = false }: { businessId: string; contacts: ContactRecord[]; startAdding?: boolean }) {
+  const [adding, setAdding] = useState(startAdding);
   const [editing, setEditing] = useState<ContactRecord | undefined>();
 
   async function remove(contact: ContactRecord) {

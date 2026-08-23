@@ -9,6 +9,7 @@ import { getBusiness } from "@/lib/domains/businesses/service";
 import { listContacts } from "@/lib/domains/contacts/service";
 import { requireUser } from "@/lib/auth/require-user";
 import { ContactList } from "@/components/contacts/contact-list";
+import { EnrichBusinessButton } from "@/components/businesses/enrich-business-button";
 
 export default async function BusinessDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireUser();
@@ -29,7 +30,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
             <div className="flex flex-wrap items-center gap-2"><h1 className="text-2xl font-semibold tracking-tight">{business.name}</h1><Badge>{business.website_status}</Badge></div>
             <p className="mt-2 text-sm text-text-secondary">Business record · sales state belongs to the Lead domain.</p>
           </div>
-          <div className="flex gap-2"><Button asChild variant="secondary"><Link href={`/businesses/${id}/edit`}><Pencil className="size-4" />Edit</Link></Button><Button asChild><Link href={`/leads/new?business=${id}`}><UserPlus className="size-4" />Create lead</Link></Button></div>
+          <div className="flex flex-wrap gap-2"><EnrichBusinessButton businessId={id} /><Button asChild variant="secondary"><Link href={`/businesses/${id}/edit`}><Pencil className="size-4" />Edit</Link></Button><Button asChild><Link href={`/leads/new?business=${id}`}><UserPlus className="size-4" />Create lead</Link></Button></div>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-2">

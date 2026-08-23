@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Check, ExternalLink, Loader2, Plus, Search, X } from "lucide-react";
 import { addProspectAction, searchProspectsAction } from "@/app/actions/prospecting";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PROSPECTING_PROVIDERS, type ProspectResult, type ProspectingProvider } from "@/lib/domains/prospecting/types";
+import { PROSPECTING_PROVIDERS, type ProspectResult, type ProspectingProvider, type ProspectingSession } from "@/lib/domains/prospecting/types";
 
 type Category = { id: string; name: string; slug: string };
-type ResultState = ProspectResult & { state?: "ADDED" | "EXISTS" | "IGNORED" };
+type ResultState = ProspectResult & { state?: "ADDED" | "EXISTS" | "IGNORED"; businessId?: string };
 
 const providerLabels: Record<ProspectingProvider, string> = {
   osm_overpass: "OpenStreetMap",
@@ -18,16 +19,66 @@ const providerLabels: Record<ProspectingProvider, string> = {
 };
 
 export function ProspectingWorkbench({ categories, configuredProviders }: { categories: Category[]; configuredProviders: ProspectingProvider[] }) {
-  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
-  const [postalCode, setPostalCode] = useState("");
-  const [radiusKm, setRadiusKm] = useState("5");
-  const [providers, setProviders] = useState<ProspectingProvider[]>(configuredProviders);
-  const [results, setResults] = useState<ResultState[]>([]);
+  const [categoryId, setCategoryId] = useState(() => {
+    if (typeof window === "undefined") return categories[0]?.id ?? "";
+    try {
+      const raw = window.sessionStorage.getItem("metrogee:prospecting-session");
+      const session = raw ? JSON.parse(raw) as ProspectingSession : null;
+      return session && categories.some((category) => category.id === session.categoryId) ? session.categoryId : categories[0]?.id ?? "";
+    } catch {
+      return categories[0]?.id ?? "";
+    }
+  });
+  const [postalCode, setPostalCode] = useState(() => {
+    if (typeof window === "undefined") return "";
+    try { return (JSON.parse(window.sessionStorage.getItem("metrogee:prospecting-session") ?? "null") as ProspectingSession | null)?.postalCode ?? ""; } catch { return ""; }
+  });
+  const [radiusKm, setRadiusKm] = useState(() => {
+    if (typeof window === "undefined") return "5";
+    try { return (JSON.parse(window.sessionStorage.getItem("metrogee:prospecting-session") ?? "null") as ProspectingSession | null)?.radiusKm ?? "5"; } catch { return "5"; }
+  });
+  const [providers, setProviders] = useState<ProspectingProvider[]>(() => {
+    if (typeof window === "undefined") return configuredProviders;
+    try {
+      const session = JSON.parse(window.sessionStorage.getItem("metrogee:prospecting-session") ?? "null") as ProspectingSession | null;
+      const saved = session?.providers?.filter((provider) => configuredProviders.includes(provider));
+      return saved?.length ? saved : configuredProviders;
+    } catch { return configuredProviders; }
+  });
+  const [results, setResults] = useState<ResultState[]>(() => {
+    if (typeof window === "undefined") return [];
+    try { return (JSON.parse(window.sessionStorage.getItem("metrogee:prospecting-session") ?? "null") as ProspectingSession | null)?.results ?? []; } catch { return []; }
+  });
+  const [locationLabel, setLocationLabel] = useState(() => {
+    if (typeof window === "undefined") return "";
+    try { return (JSON.parse(window.sessionStorage.getItem("metrogee:prospecting-session") ?? "null") as ProspectingSession | null)?.locationLabel ?? ""; } catch { return ""; }
+  });
+  const [providerCounts, setProviderCounts] = useState<Partial<Record<ProspectingProvider, number>>>(() => {
+    if (typeof window === "undefined") return {};
+    try { return (JSON.parse(window.sessionStorage.getItem("metrogee:prospecting-session") ?? "null") as ProspectingSession | null)?.providerCounts ?? {}; } catch { return {}; }
+  });
+  const [providerErrors, setProviderErrors] = useState<Partial<Record<ProspectingProvider, string>>>(() => {
+    if (typeof window === "undefined") return {};
+    try { return (JSON.parse(window.sessionStorage.getItem("metrogee:prospecting-session") ?? "null") as ProspectingSession | null)?.providerErrors ?? {}; } catch { return {}; }
+  });
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [locationLabel, setLocationLabel] = useState("");
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const session: ProspectingSession = { categoryId, postalCode, radiusKm, providers, results, locationLabel, providerCounts, providerErrors };
+    window.sessionStorage.setItem("metrogee:prospecting-session", JSON.stringify(session));
+  }, [categoryId, postalCode, radiusKm, providers, results, locationLabel, providerCounts, providerErrors]);
+
+  function clearSession() {
+    setResults([]);
+    setLocationLabel("");
+    setProviderCounts({});
+    setProviderErrors({});
+    setError("");
+    if (typeof window !== "undefined") window.sessionStorage.removeItem("metrogee:prospecting-session");
+  }
   const selectedCategory = categories.find((category) => category.id === categoryId);
 
   function toggleProvider(provider: ProspectingProvider) {
@@ -39,6 +90,8 @@ export function ProspectingWorkbench({ categories, configuredProviders }: { cate
     setLoading(true);
     setError("");
     setResults([]);
+    setProviderCounts({});
+    setProviderErrors({});
     try {
       const response = await searchProspectsAction({
         categoryId,
@@ -49,9 +102,11 @@ export function ProspectingWorkbench({ categories, configuredProviders }: { cate
       });
       setResults(response.results);
       setLocationLabel([response.location.city, response.location.state].filter(Boolean).join(", "));
-      const providerErrors = Object.entries(response.providerErrors);
-      if (providerErrors.length) {
-        setError(providerErrors.map(([provider, message]) => `${providerLabels[provider as ProspectingProvider]}: ${message}`).join(" | "));
+      setProviderCounts(response.providerCounts);
+      setProviderErrors(response.providerErrors);
+      const errors = Object.entries(response.providerErrors);
+      if (errors.length) {
+        setError(errors.map(([provider, message]) => `${providerLabels[provider as ProspectingProvider]}: ${message}`).join(" | "));
       }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not search for businesses.");
@@ -66,7 +121,7 @@ export function ProspectingWorkbench({ categories, configuredProviders }: { cate
     try {
       const response = await addProspectAction(categoryId, result);
       setResults((current) => current.map((item) => item.providerPlaceId === result.providerPlaceId && item.provider === result.provider
-        ? { ...item, state: response.status === "CREATED" ? "ADDED" : "EXISTS" }
+        ? { ...item, state: response.status === "CREATED" ? "ADDED" : "EXISTS", businessId: response.businessId }
         : item));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not add this business.");
@@ -127,7 +182,16 @@ export function ProspectingWorkbench({ categories, configuredProviders }: { cate
       <section className="overflow-hidden rounded-xl border border-border bg-surface">
         <div className="flex flex-col gap-2 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div><h2 className="text-sm font-semibold">Search results</h2><p className="mt-1 text-xs text-text-muted">{results.length ? `${results.length} candidates${locationLabel ? ` around ${locationLabel}` : ""}` : "Nothing searched yet."}</p></div>
-          {results.length ? <Badge variant="neutral">Review before adding</Badge> : null}
+          {results.length ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {PROSPECTING_PROVIDERS.filter((provider) => providers.includes(provider)).map((provider) => (
+                <Badge key={provider} variant={providerErrors[provider] ? "warning" : "neutral"}>
+                  {providerLabels[provider]} {providerErrors[provider] ? "· Failed" : `· ${providerCounts[provider] ?? 0} found`}
+                </Badge>
+              ))}
+              <Button type="button" size="sm" variant="secondary" onClick={clearSession}>Clear current search</Button>
+            </div>
+          ) : null}
         </div>
 
         {results.length === 0 ? (
@@ -156,7 +220,11 @@ export function ProspectingWorkbench({ categories, configuredProviders }: { cate
                 </div>
                 <div className="flex shrink-0 gap-2">
                   {result.state === "ADDED" || result.state === "EXISTS" ? (
-                    <Button asChild variant="secondary" size="sm"><a href="/businesses">View businesses</a></Button>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Button asChild variant="secondary" size="sm"><Link href={`/businesses/${result.businessId}`}>Open business</Link></Button>
+                      <Button asChild variant="secondary" size="sm"><Link href={`/businesses/${result.businessId}?action=contact`}>Add contact</Link></Button>
+                      <Button asChild size="sm"><Link href={`/leads/new?business=${result.businessId}`}>Create lead</Link></Button>
+                    </div>
                   ) : result.state === "IGNORED" ? (
                     <Button type="button" size="sm" variant="secondary" onClick={() => setResults((current) => current.map((item) => item.providerPlaceId === result.providerPlaceId && item.provider === result.provider ? { ...item, state: undefined } : item))}>Undo</Button>
                   ) : (

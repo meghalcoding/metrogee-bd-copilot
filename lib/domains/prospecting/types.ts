@@ -36,11 +36,23 @@ export type ProspectResult = {
   raw: Record<string, unknown>;
 };
 
+export type ProspectingSession = {
+  categoryId: string;
+  postalCode: string;
+  radiusKm: string;
+  providers: ProspectingProvider[];
+  results: (ProspectResult & { state?: "ADDED" | "EXISTS" | "IGNORED" })[];
+  locationLabel: string;
+  providerCounts: Partial<Record<ProspectingProvider, number>>;
+  providerErrors: Partial<Record<ProspectingProvider, string>>;
+};
+
 export type ProspectSearchResult = {
   results: ProspectResult[];
   nextPage: number | null;
   providersUsed: ProspectingProvider[];
   providerErrors: Partial<Record<ProspectingProvider, string>>;
+  providerCounts: Partial<Record<ProspectingProvider, number>>;
   location: {
     postalCode: string;
     city: string | null;

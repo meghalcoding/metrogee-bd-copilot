@@ -70,12 +70,15 @@ export async function searchProspects(input: ProspectSearchInput, categoryName: 
     }
   }));
 
+  const providerCounts: ProspectSearchResult["providerCounts"] = {};
+  providers.forEach((provider, index) => { providerCounts[provider] = batches[index].length; });
   const results = dedupeResults(batches.flat());
   return {
     results,
     nextPage: null,
     providersUsed: providers,
     providerErrors,
+    providerCounts,
     location,
   };
 }

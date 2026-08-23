@@ -14,7 +14,14 @@ export async function searchGeoapify(slug: string, categoryName: string, lat: nu
   url.searchParams.set("apiKey", key);
 
   const response = await fetch(url, { signal: AbortSignal.timeout(15000), cache: "no-store" });
-  if (!response.ok) throw new Error(`Geoapify returned ${response.status}.`);
+  if (!response.ok) {
+    const messages: Record<number, string> = {
+      401: "API key is invalid or missing.",
+      403: "API access was denied. Check your Geoapify project and key.",
+      429: "Rate or daily quota limit reached.",
+    };
+    throw new Error(`Geoapify returned ${response.status}: ${messages[response.status] ?? "The provider temporarily rejected the request."}`);
+  }
   const payload = (await response.json()) as { features?: Array<{ properties?: Record<string, unknown> }> };
 
   return (payload.features ?? []).map((feature): ProspectResult => {
