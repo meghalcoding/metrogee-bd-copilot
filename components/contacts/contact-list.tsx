@@ -39,11 +39,11 @@ export function ContactList({ businessId, contacts, startAdding = false }: { bus
         <div className="divide-y divide-border">
           {contacts.map((contact) => (
             <div key={contact.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="font-medium text-foreground">{contact.full_name}</div>
-                <div className="mt-1 text-xs text-text-secondary">{contact.job_title || "No title"}{contact.email ? ` · ${contact.email}` : ""}{contact.phone ? ` · ${contact.phone}` : ""}</div>
+              <div className="min-w-0">
+                <div className="truncate font-medium text-foreground">{contact.full_name}</div>
+                <div className="mt-1 truncate text-xs text-text-secondary">{contact.job_title || "No title"}{contact.email ? ` · ${contact.email}` : ""}{contact.phone ? ` · ${contact.phone}` : ""}</div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end sm:shrink-0">
                 {contact.preferred_channel ? <Badge variant="neutral">{contact.preferred_channel}</Badge> : null}
                 {contact.email ? <SendEmailButton contactId={contact.id} contactName={contact.full_name} email={contact.email} /> : null}
                 <Button variant="ghost" size="icon" onClick={() => setEditing(contact)} aria-label={`Edit ${contact.full_name}`}><Pencil className="size-4" /></Button>

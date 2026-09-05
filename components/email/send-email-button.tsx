@@ -38,8 +38,8 @@ export function SendEmailButton({ contactId, contactName, email, leadId }: { con
               <button type="button" onClick={() => setOpen(false)} aria-label="Close"><X className="size-5" /></button>
             </div>
             <div className="mt-5 space-y-4">
-              <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm" />
-              <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={8} placeholder="Write your message..." className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+              <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70" />
+              <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={8} placeholder="Write your message..." className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15" />
               {error ? <p className="text-sm text-danger">{error}</p> : null}
               {message ? <p className="text-sm text-success">{message}</p> : null}
               <div className="flex justify-end gap-2"><Button type="button" variant="secondary" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" disabled={pending} onClick={send}>{pending ? "Sending..." : "Send email"}</Button></div>

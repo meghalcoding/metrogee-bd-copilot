@@ -57,7 +57,7 @@ export function IntegrationCard({
           status === "ERROR" ? "bg-danger/10 text-danger" :
           "bg-surface-muted text-text-secondary"
         }`}>
-          {status === "CONNECTED" ? "Connected" : status === "DISABLED" ? "Disabled" : "Not connected"}
+          {status === "CONNECTED" ? "Connected" : status === "DISABLED" ? "Disabled" : status === "ERROR" ? "Error" : "Not connected"}
         </span>
       </div>
 

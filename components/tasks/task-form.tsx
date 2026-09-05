@@ -157,7 +157,7 @@ export function TaskForm({
                 name="business_id"
                 value={selectedBusinessId}
                 onChange={(e) => handleBusinessChange(e.target.value)}
-                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
+                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 <option value="">Select a business...</option>
 
@@ -180,7 +180,7 @@ export function TaskForm({
                 value={selectedLeadId}
                 onChange={(e) => handleLeadChange(e.target.value)}
                 disabled={!selectedBusinessId}
-                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 <option value="">
                   {selectedBusinessId
@@ -213,7 +213,7 @@ export function TaskForm({
                 value={selectedOpportunityId}
                 onChange={(e) => setSelectedOpportunityId(e.target.value)}
                 disabled={!selectedLeadId}
-                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 <option value="">
                   {selectedLeadId
@@ -247,7 +247,7 @@ export function TaskForm({
             name="title"
             required
             defaultValue={task?.title ?? ""}
-            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
+            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70"
             placeholder="Follow up about website proposal"
           />
         </label>
@@ -261,7 +261,7 @@ export function TaskForm({
           <select
             name="type"
             defaultValue={task?.type ?? "FOLLOW_UP"}
-            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
+            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {TASK_TYPES.map((v) => (
               <option key={v}>{v}</option>
@@ -278,7 +278,7 @@ export function TaskForm({
           <select
             name="priority"
             defaultValue={task?.priority ?? "NORMAL"}
-            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
+            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {TASK_PRIORITIES.map((v) => (
               <option key={v}>{v}</option>
@@ -295,7 +295,7 @@ export function TaskForm({
           <select
             name="status"
             defaultValue={task?.status ?? "OPEN"}
-            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
+            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {TASK_STATUSES.map((v) => (
               <option key={v}>{v}</option>
@@ -313,7 +313,7 @@ export function TaskForm({
             name="due_at"
             type="datetime-local"
             defaultValue={task?.due_at ? task.due_at.slice(0, 16) : ""}
-            className="h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            className="h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </label>
 
@@ -327,7 +327,7 @@ export function TaskForm({
             name="description"
             rows={4}
             defaultValue={task?.description ?? ""}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </label>
       </div>

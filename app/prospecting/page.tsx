@@ -3,6 +3,7 @@ import { ProspectingWorkbench } from "@/components/prospecting/prospecting-workb
 import { requireUser } from "@/lib/auth/require-user";
 import { getCurrentOrganization } from "@/lib/domains/organizations/current";
 import { listBusinessCategories } from "@/lib/domains/businesses/service";
+import { CUSTOM_CATEGORY } from "@/lib/domains/prospecting/categories";
 import type { ProspectingProvider } from "@/lib/domains/prospecting/types";
 
 function configuredProviders(): ProspectingProvider[] {
@@ -17,6 +18,12 @@ export default async function ProspectingPage() {
   await requireUser();
   const organization = await getCurrentOrganization();
   if (!organization) return null;
-  const categories = await listBusinessCategories(organization.id);
-  return <AppShell><ProspectingWorkbench categories={categories} configuredProviders={configuredProviders()} /></AppShell>;
+  const dbCategories = await listBusinessCategories(organization.id);
+  // Append the custom/free-text option at the end
+  const categories = [...dbCategories, CUSTOM_CATEGORY];
+  return (
+    <AppShell>
+      <ProspectingWorkbench categories={categories} configuredProviders={configuredProviders()} />
+    </AppShell>
+  );
 }

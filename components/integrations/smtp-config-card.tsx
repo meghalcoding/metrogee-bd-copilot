@@ -44,7 +44,7 @@ export function SmtpConfigCard({ configured }: { configured: boolean }) {
         <Field label="Port" name="port" type="number" defaultValue="587" />
         <label className="space-y-2">
           <span className="block text-xs font-medium text-text-secondary">Security</span>
-          <select name="security" defaultValue="STARTTLS" className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm">
+          <select name="security" defaultValue="STARTTLS" className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70">
             <option value="STARTTLS">STARTTLS (587)</option>
             <option value="TLS">TLS / SSL (465)</option>
             <option value="NONE">None</option>
@@ -73,7 +73,7 @@ function Field({ label, name, type = "text", defaultValue = "", placeholder, aut
   return (
     <label className="space-y-2">
       <span className="block text-xs font-medium text-text-secondary">{label}</span>
-      <input name={name} type={type} defaultValue={defaultValue} placeholder={placeholder} autoComplete={autoComplete} required className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm" />
+      <input name={name} type={type} defaultValue={defaultValue} placeholder={placeholder} autoComplete={autoComplete} required className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70" />
     </label>
   );
 }

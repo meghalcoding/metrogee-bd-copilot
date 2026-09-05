@@ -55,7 +55,7 @@ export function ContactForm({ businessId, initial, onCancel }: { businessId: str
         <Field label="Phone"><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
         <Field label="WhatsApp"><Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} /></Field>
         <Field label="Preferred channel">
-          <select value={channel} onChange={(e) => setChannel(e.target.value)} className="h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-foreground">
+          <select value={channel} onChange={(e) => setChannel(e.target.value)} className="h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-70">
             <option value="">Not specified</option>
             <option value="PHONE">Phone</option>
             <option value="EMAIL">Email</option>

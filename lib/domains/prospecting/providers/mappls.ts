@@ -1,11 +1,13 @@
 import "server-only";
 import type { ProspectResult } from "../types";
-import { providerCategory } from "../categories";
+import { mapplsKeywords } from "../categories";
 
 type MapplsPlace = {
   eLoc?: string;
   placeName?: string;
   placeAddress?: string;
+  city?: string;
+  state?: string;
   distance?: number;
   mobileNo?: string;
   landlineNo?: string;
@@ -14,11 +16,23 @@ type MapplsPlace = {
   type?: string;
 };
 
-export async function searchMappls(slug: string, categoryName: string, lat: number, lon: number, radiusKm: number): Promise<ProspectResult[]> {
+export async function searchMappls(
+  slug: string,
+  categoryName: string,
+  lat: number,
+  lon: number,
+  radiusKm: number,
+  customQuery = "",
+): Promise<ProspectResult[]> {
   const key = process.env.MAPPLS_ACCESS_TOKEN;
   if (!key) throw new Error("MAPPLS_ACCESS_TOKEN is not configured.");
+
+  const keywords = slug === "custom"
+    ? (customQuery || categoryName)
+    : mapplsKeywords(slug, categoryName);
+
   const url = new URL("https://search.mappls.com/search/places/nearby/json");
-  url.searchParams.set("keywords", String(providerCategory(slug, "mappls", categoryName)));
+  url.searchParams.set("keywords", keywords);
   url.searchParams.set("refLocation", `${lat},${lon}`);
   url.searchParams.set("region", "IND");
   url.searchParams.set("radius", String(Math.min(Math.max(radiusKm * 1000, 500), 10000)));
@@ -38,6 +52,9 @@ export async function searchMappls(slug: string, categoryName: string, lat: numb
       providerPlaceId: place.eLoc ?? `${name}:${place.distance ?? 0}`,
       name,
       formattedAddress: address,
+      city: place.city ?? null,
+      regionState: place.state ?? null,
+      country: "India",
       latitude: null,
       longitude: null,
       mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([name, address].filter(Boolean).join(", "))}`,
@@ -50,6 +67,8 @@ export async function searchMappls(slug: string, categoryName: string, lat: numb
       types: place.keywords ?? [place.type ?? "POI"],
       businessStatus: null,
       distanceKm: typeof place.distance === "number" ? place.distance / 1000 : null,
+      openingHours: null,
+      socialLinks: {},
       raw: place as unknown as Record<string, unknown>,
     };
   });

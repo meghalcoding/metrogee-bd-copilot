@@ -19,7 +19,7 @@ export function BusinessForm({ initial }: { initial?: BusinessRecord }) {
   const [city, setCity] = useState(initial?.city ?? "");
   const [state, setState] = useState(initial?.state ?? "");
   const [postalCode, setPostalCode] = useState(initial?.postal_code ?? "");
-  const [country, setCountry] = useState(initial?.country ?? "India");
+  const [country, setCountry] = useState(initial?.country ?? "");
   const [categoryId, setCategoryId] = useState(initial?.primary_category_id ?? "");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -74,8 +74,8 @@ export function BusinessForm({ initial }: { initial?: BusinessRecord }) {
         <Field label="State / Region">
           <Input value={state} onChange={(e) => setState(e.target.value)} />
         </Field>
-        <Field label="PIN code">
-          <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" maxLength={6} placeholder="390001" />
+        <Field label="Postal / ZIP code">
+          <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="390001, 10001, SW1A 1AA" />
         </Field>
         <Field label="Country">
           <Input value={country} onChange={(e) => setCountry(e.target.value)} />
